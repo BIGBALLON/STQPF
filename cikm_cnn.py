@@ -25,7 +25,7 @@ def process_line(line):
     x = str(tmp[2])
     x = x.split()
     x = np.reshape(np.asarray(x,dtype='float32'),(101,101,60))
-    x = x[50:60,50:60,1:4]
+    x = x[50:60,50:60,:15]
     return x,y
 
 def generate_arrays_from_file(path,batch_size):
@@ -56,7 +56,7 @@ def build_model():
 
     model = Sequential()
   
-    model.add(Conv2D(60, (3, 3), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(1,3,60)), input_shape=(10,10,3))) 
+    model.add(Conv2D(60, (3, 3), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(1,3,60)), input_shape=(10,10,15))) 
     model.add(Activation(acti_fun))
     model.add(Conv2D(60, (1, 1), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(3,1,60))))
     model.add(Activation(acti_fun))
@@ -68,14 +68,15 @@ def build_model():
     model.add(AveragePooling2D(pool_size=(3, 3),strides=(2,2),padding = 'same'))
     model.add(Dropout(dropout))
 
-    model.add(Conv2D(60, (1, 1), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(8,1,60))))
+    model.add(Conv2D(30, (1, 1), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(8,1,60))))
     model.add(Activation(acti_fun))
     model.add(Conv2D(10, (1, 1), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(9,1,10))))
     model.add(Activation(acti_fun))
 
     model.add(Flatten())
     model.add(Dense(1))
-    model.compile(optimizer='rmsprop', loss='mse')
+    adam = optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+    model.compile(optimizer=adam, loss='mse')
     return model
 
 if __name__ == '__main__':
@@ -86,4 +87,4 @@ if __name__ == '__main__':
             samples_per_epoch=iterations,
             nb_epoch=epochs,
             validation_data=generate_arrays_from_file(r'test_split.txt',batch_size=batch_size),
-            validation_steps=iterations)
+            validation_steps=10)
