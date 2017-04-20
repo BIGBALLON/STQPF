@@ -109,8 +109,9 @@ def build_model():
 	# optimizers should be tested
 	# sgd + momentum
 	# others
-	adam = optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=1e-6)
-	# sdg = optimizers.SGD(lr=0.01, momentum=0.9, decay=1e-6, nesterov=True)
+	adam = optimizers.Adam(lr=0.0035, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=1e-6)
+	# sgd = optimizers.SGD(lr=0.005, momentum=0.9, decay=1e-6, nesterov=True)
+	# rms = optimizers.RMSprop(lr=0.0035, rho=0.9, epsilon=1e-08, decay=1e-6)
 	model.compile(optimizer=adam, loss='mse')
 	return model
 
