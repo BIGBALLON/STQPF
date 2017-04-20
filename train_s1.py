@@ -3,6 +3,7 @@ import tensorflow as tf
 import numpy as np
 import math
 import os 
+import sys
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Conv2D, MaxPooling2D, GlobalAveragePooling2D, AveragePooling2D
@@ -11,11 +12,11 @@ from keras import optimizers
 from keras.layers.normalization import BatchNormalization
 
 acti_fun = 'relu'
-weight_init = 0.0002
+weight_init = 0.0003
 dropout = 0.5
-batch_size = 50
-iterations = 180
-epochs = 100
+batch_size = 128
+# iterations = 180
+epochs = 200
 log_filepath = r'./logs'
 
 def get_he_weight(k,c):
@@ -28,36 +29,29 @@ def process_line(line):
 	x = x.split()
 	x = np.reshape(np.asarray(x,dtype='float32'),(101,101,60))
 	x = x[40:70,40:70,:]
-	return x,y
+	return x, y
 
-def generate_arrays_from_file(path,batch_size):
+def generate_arrays_from_file(path):
 	if not os.path.exists(path):
 		print("file not exist")
 		return
-	while 1:
-		f = open(path)
-		cnt = 0
-		X =[]
-		Y =[]
-		for line in f:
-			ll = len(line)
-			if ll < 100:
-				continue
-			x, y = process_line(line)
-			X.append(x)
-			Y.append(y)
-			cnt += 1
-			if cnt==batch_size:
-				cnt = 0
-				yield (np.array(X), np.array(Y))
-				X = []
-				Y = []
+	f = open(path)
+	cnt = 0
+	X =[]
+	Y =[]
+	for line in f:
+		ll = len(line)
+		if ll < 100:
+			continue
+		x, y = process_line(line)
+		X.append(x)
+		Y.append(y)
 	f.close()
+	return np.array(X), np.array(Y)
 
 #  model should be change
+#  model should be change
 def build_model():
-
-	model = Sequential()
 
 	# -------- build model -------- #
 	model = Sequential()
@@ -133,31 +127,38 @@ def build_model():
 	model.add(BatchNormalization())
 	model.add(Activation('relu'))
 	model.add(Dropout(dropout))      
-	model.add(Dense(10, kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = 0.01), name='predictions_cifa10'))        
-	model.add(Flatten())
-	model.add(Dense(1))
+	model.add(Dense(1, kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = 0.01), name='predictions_cifa10'))        
+	# model.add(Flatten())
 
 	# optimizers should be tested
 	# sgd + momentum
 	# others
-	adam = optimizers.Adam(lr=0.0035, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=1e-6)
-	# sgd = optimizers.SGD(lr=0.005, momentum=0.9, decay=1e-6, nesterov=True)
+	adam = optimizers.Adam(lr=0.005, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=1e-6)
+	# sgd = optimizers.SGD(lr=0.05, momentum=0.9, decay=1e-6, nesterov=True)
 	# rms = optimizers.RMSprop(lr=0.0035, rho=0.9, epsilon=1e-08, decay=1e-6)
 	model.compile(optimizer=adam, loss='mse')
 	return model
 
 if __name__ == '__main__':
 
-	tb_cb = keras.callbacks.TensorBoard(log_dir=log_filepath, histogram_freq=0)
-	cbks = [tb_cb]
+	# tb_cb = keras.callbacks.TensorBoard(log_dir=log_filepath, histogram_freq=0)
+	# cbks = [tb_cb]
 
 	model = build_model()
-	model.fit_generator(
-			generator = generate_arrays_from_file(r'train_split.txt',batch_size=batch_size),
-			samples_per_epoch=iterations,
-			nb_epoch=epochs,
-			callbacks=cbks,
-			validation_data=generate_arrays_from_file(r'test_split.txt',batch_size=batch_size),
-			validation_steps=20,
-			workers=1)
-	model.save('test1.h5')
+
+	print("--------------generate_arrays_from_file--------------------")
+	x, y = generate_arrays_from_file('train_A.txt')
+	print("----------------------------ok-----------------------------")
+	
+	model.fit( x, y, batch_size=batch_size, epochs=epochs, verbose=1, callbacks=None, validation_split=0.1, validation_data=None, shuffle=True, class_weight=None, sample_weight=None, initial_epoch=0)
+
+
+	# model.fit_generator(
+	# 		generator = generate_arrays_from_file(r'train_split.txt',batch_size=batch_size),
+	# 		samples_per_epoch=iterations,
+	# 		nb_epoch=epochs,
+	# 		callbacks=cbks,
+	# 		validation_data=generate_arrays_from_file(r'test_split.txt',batch_size=batch_size),
+	# 		validation_steps=20,
+	# 		workers=1)
+	model.save(sys.argv[1])
