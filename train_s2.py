@@ -17,8 +17,8 @@ weight_init = 0.0002
 dropout = 0.5
 batch_size = 128
 # iterations = 180
-epochs = 150
-log_filepath = r'./logs'
+epochs = 180
+log_filepath = r'./logs' + sys.argv[2] + '2'
 
 def get_he_weight(k,c):
 	return math.sqrt(2/(k*k*c))
@@ -52,17 +52,16 @@ def generate_arrays_from_file(path):
 
 if __name__ == '__main__':
 
-	# tb_cb = keras.callbacks.TensorBoard(log_dir=log_filepath, histogram_freq=0)
-	# cbks = [tb_cb]
+	tb_cb = keras.callbacks.TensorBoard(log_dir=log_filepath, histogram_freq=0)
+	cbks = [tb_cb]
 
 	# model = build_model()
 	model = load_model(sys.argv[1])
 	print("--------------generate_arrays_from_file--------------------")
 	x, y = generate_arrays_from_file('train_B.txt')
 	print("----------------------------ok-----------------------------")
-	
-	model.fit( x, y, batch_size=batch_size, epochs=epochs, verbose=1, callbacks=None, validation_split=0.1, validation_data=None, shuffle=True, class_weight=None, sample_weight=None, initial_epoch=0)
 
+	model.fit( x, y, batch_size=batch_size, epochs=epochs, verbose=1, callbacks=cbks, validation_split=0.1, validation_data=None, shuffle=True, class_weight=None, sample_weight=None, initial_epoch=0)
 
 	# model.fit_generator(
 	# 		generator = generate_arrays_from_file(r'train_split.txt',batch_size=batch_size),

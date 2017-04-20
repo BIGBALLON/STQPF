@@ -12,12 +12,34 @@ from keras import optimizers
 from keras.layers.normalization import BatchNormalization
 
 acti_fun = 'relu'
-weight_init = 0.0003
+weight_init = 0.001
 dropout = 0.5
 batch_size = 128
 # iterations = 180
-epochs = 200
-log_filepath = r'./logs'
+epochs = 180
+log_filepath = r'./logs' + sys.argv[2]
+
+lr_set = int(sys.argv[2])
+print(lr_set)
+print(type(lr_set))
+
+if lr_set == 4:
+	init_lr = 0.01
+elif lr_set == 5:
+	init_lr = 0.02
+elif lr_set == 6:
+	init_lr = 0.04
+elif lr_set == 7:
+	init_lr = 0.001
+elif lr_set == 8:
+	init_lr = 0.003
+else:
+	init_lr = 0.005
+
+
+print(init_lr)
+print(log_filepath)
+
 
 def get_he_weight(k,c):
 	return math.sqrt(2/(k*k*c))
@@ -126,14 +148,14 @@ def build_model():
 	model.add(Dense(4096, kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = 0.01), name='fc2'))  
 	model.add(BatchNormalization())
 	model.add(Activation('relu'))
-	model.add(Dropout(dropout))      
-	model.add(Dense(1, kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = 0.01), name='predictions_cifa10'))        
+	model.add(Dropout(dropout))	  
+	model.add(Dense(1, kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = 0.01), name='predictions_cifa10'))		
 	# model.add(Flatten())
 
 	# optimizers should be tested
 	# sgd + momentum
 	# others
-	adam = optimizers.Adam(lr=0.005, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=1e-6)
+	adam = optimizers.Adam(lr=init_lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=1e-6)
 	# sgd = optimizers.SGD(lr=0.05, momentum=0.9, decay=1e-6, nesterov=True)
 	# rms = optimizers.RMSprop(lr=0.0035, rho=0.9, epsilon=1e-08, decay=1e-6)
 	model.compile(optimizer=adam, loss='mse')
@@ -141,16 +163,16 @@ def build_model():
 
 if __name__ == '__main__':
 
-	# tb_cb = keras.callbacks.TensorBoard(log_dir=log_filepath, histogram_freq=0)
-	# cbks = [tb_cb]
+	tb_cb = keras.callbacks.TensorBoard(log_dir=log_filepath, histogram_freq=0)
+	cbks = [tb_cb]
 
 	model = build_model()
 
 	print("--------------generate_arrays_from_file--------------------")
 	x, y = generate_arrays_from_file('train_A.txt')
 	print("----------------------------ok-----------------------------")
-	
-	model.fit( x, y, batch_size=batch_size, epochs=epochs, verbose=1, callbacks=None, validation_split=0.1, validation_data=None, shuffle=True, class_weight=None, sample_weight=None, initial_epoch=0)
+
+	model.fit( x, y, batch_size=batch_size, epochs=epochs, verbose=1, callbacks=cbks, validation_split=0.1, validation_data=None, shuffle=True, class_weight=None, sample_weight=None, initial_epoch=0)
 
 
 	# model.fit_generator(
