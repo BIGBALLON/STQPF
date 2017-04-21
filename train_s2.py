@@ -29,7 +29,7 @@ def process_line(line):
 	x = str(tmp[2])
 	x = x.split()
 	x = np.reshape(np.asarray(x,dtype='float32'),(101,101,60))
-	x = x[40:70,40:70,:]
+	# x = x[:,:,:]
 	return x, y
 
 def generate_arrays_from_file(path):

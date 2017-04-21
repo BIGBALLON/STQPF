@@ -12,9 +12,9 @@ from keras import optimizers
 from keras.layers.normalization import BatchNormalization
 
 acti_fun = 'relu'
-weight_init = 0.001
+weight_init = 0.0005
 dropout = 0.5
-batch_size = 128
+batch_size = 32
 # iterations = 180
 epochs = 180
 log_filepath = r'./logs' + sys.argv[2]
@@ -23,16 +23,18 @@ lr_set = int(sys.argv[2])
 print(lr_set)
 print(type(lr_set))
 
-if lr_set == 4:
+if lr_set == 3:
 	init_lr = 0.01
-elif lr_set == 5:
+elif lr_set == 4:
 	init_lr = 0.02
+elif lr_set == 5:
+	init_lr = 0.002
 elif lr_set == 6:
-	init_lr = 0.04
-elif lr_set == 7:
 	init_lr = 0.001
-elif lr_set == 8:
+elif lr_set == 7:
 	init_lr = 0.003
+elif lr_set == 8:
+  init_lr = 0.0008
 else:
 	init_lr = 0.005
 
@@ -50,7 +52,7 @@ def process_line(line):
 	x = str(tmp[2])
 	x = x.split()
 	x = np.reshape(np.asarray(x,dtype='float32'),(101,101,60))
-	x = x[40:70,40:70,:]
+	# x = x[:,:,:]
 	return x, y
 
 def generate_arrays_from_file(path):
@@ -77,80 +79,52 @@ def build_model():
 
 	# -------- build model -------- #
 	model = Sequential()
-	# Block 1
-	model.add(Conv2D(64, (3, 3), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(3,64)), name='block1_conv1', input_shape=(30,30,60)))
-	model.add(BatchNormalization())
-	model.add(Activation('relu'))
-	model.add(Conv2D(64, (3, 3), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(3,64)), name='block1_conv2'))
-	model.add(BatchNormalization())
-	model.add(Activation('relu'))
-	model.add(MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool'))
 
-	# Block 2
-	model.add(Conv2D(128, (3, 3), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(3,128)), name='block2_conv1'))
-	model.add(BatchNormalization())
-	model.add(Activation('relu'))
-	model.add(Conv2D(128, (3, 3), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(3,128)), name='block2_conv2'))
-	model.add(BatchNormalization())
-	model.add(Activation('relu'))
-	model.add(MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool'))
+	model.add(Conv2D(160, (5, 5), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(5,160)), input_shape=(101,101,60)))
+	model.add(BatchNormalization())  
+	model.add(Activation(acti_fun))
 
-	# Block 3
-	model.add(Conv2D(256, (3, 3), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(3,256)), name='block3_conv1'))
+	model.add(Conv2D(160, (1, 1), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(1,160))))
 	model.add(BatchNormalization())
-	model.add(Activation('relu'))
-	model.add(Conv2D(256, (3, 3), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(3,256)), name='block3_conv2'))
-	model.add(BatchNormalization())
-	model.add(Activation('relu'))
-	model.add(Conv2D(256, (3, 3), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(3,256)), name='block3_conv3'))
-	model.add(BatchNormalization())
-	model.add(Activation('relu'))
-	model.add(Conv2D(256, (3, 3), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(3,256)), name='block3_conv4'))
-	model.add(BatchNormalization())
-	model.add(Activation('relu'))
-	model.add(MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool'))
+	model.add(Activation(acti_fun))
 
-	# Block 4
-	model.add(Conv2D(512, (3, 3), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(3,512)), name='block4_conv1'))
-	model.add(BatchNormalization())
-	model.add(Activation('relu'))
-	model.add(Conv2D(512, (3, 3), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(3,512)), name='block4_conv2'))
-	model.add(BatchNormalization())
-	model.add(Activation('relu'))
-	model.add(Conv2D(512, (3, 3), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(3,512)), name='block4_conv3'))
-	model.add(BatchNormalization())
-	model.add(Activation('relu'))
-	model.add(Conv2D(512, (3, 3), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(3,512)), name='block4_conv4'))
-	model.add(BatchNormalization())
-	model.add(Activation('relu'))
-	model.add(MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool'))
+	model.add(Conv2D(96, (1, 1), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(1,96)) ))
+	model.add(BatchNormalization())  
+	model.add(Activation(acti_fun))
 
-	# Block 5
-	model.add(Conv2D(512, (3, 3), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(get_he_weight(3,512)), name='block5_conv1'))
-	model.add(BatchNormalization())
-	model.add(Activation('relu'))
-	model.add(Conv2D(512, (3, 3), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(get_he_weight(3,512)), name='block5_conv2'))
-	model.add(BatchNormalization())
-	model.add(Activation('relu'))
-	model.add(Conv2D(512, (3, 3), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(get_he_weight(3,512)), name='block5_conv3'))
-	model.add(BatchNormalization())
-	model.add(Activation('relu'))
-	model.add(Conv2D(512, (3, 3), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(get_he_weight(3,512)), name='block5_conv4'))
-	model.add(BatchNormalization())
-	model.add(Activation('relu'))
+	model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2),padding = 'same'))
 
-	# model modification for cifar-10
-	model.add(Flatten(name='flatten'))
-	model.add(Dense(4096, use_bias = True, kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = 0.01), name='fc_cifa10'))
-	model.add(BatchNormalization())
-	model.add(Activation('relu'))
 	model.add(Dropout(dropout))
-	model.add(Dense(4096, kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = 0.01), name='fc2'))  
+
+	model.add(Conv2D(96, (5, 5), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(5,96))))
 	model.add(BatchNormalization())
-	model.add(Activation('relu'))
-	model.add(Dropout(dropout))	  
-	model.add(Dense(1, kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = 0.01), name='predictions_cifa10'))		
-	# model.add(Flatten())
+	model.add(Activation(acti_fun))
+
+	model.add(Conv2D(96, (1, 1), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(1,96))))
+	model.add(BatchNormalization()) 
+	model.add(Activation(acti_fun))
+
+	model.add(Conv2D(96, (1, 1), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(1,96))))
+	model.add(BatchNormalization())  
+	model.add(Activation(acti_fun))
+
+	model.add(AveragePooling2D(pool_size=(3, 3),strides=(2,2),padding = 'same'))
+
+	model.add(Dropout(dropout))
+	model.add(Conv2D(96, (3, 3), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(3,96))))
+	model.add(BatchNormalization())  
+	model.add(Activation(acti_fun))
+
+	model.add(Conv2D(96, (1, 1), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(1,96))))
+	model.add(BatchNormalization())  
+	model.add(Activation(acti_fun))
+
+	model.add(Conv2D(10, (1, 1), padding='same', kernel_regularizer=keras.regularizers.l2(weight_init), kernel_initializer=RandomNormal(stddev = get_he_weight(1,10))))
+	model.add(BatchNormalization())  
+	model.add(Activation(acti_fun))
+
+	model.add(Flatten())
+	model.add(Dense(1))
 
 	# optimizers should be tested
 	# sgd + momentum
